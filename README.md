@@ -109,9 +109,11 @@ START → PLAN → IMPLEMENT → VERIFY → REVIEW
 ```
 
 Key concepts:
-- **Plan Mode**: Read-only exploration before editing
+- **Plan Mode**: Read-only exploration before editing (produces a plan section; optionally write PLAN.md only if explicitly requested)
 - **Context Management**: `/compact`, `/context`, `CLAUDE.md`
 - **CLI Modes**: Interactive, Print (automation), Headless
+
+> **Note:** Available slash commands can vary by version. Use `/help` in your Claude Code session to confirm supported commands.
 
 ### Follow Structured Workflows
 
@@ -175,12 +177,12 @@ These rules apply to **every** Claude Code session:
 
 These conditions require **immediate halt**. See [STOP-RULES.md](./STOP-RULES.md):
 
-| Condition | Action |
-|-----------|--------|
-| Required info missing | **STOP and ask** |
-| Forbidden paths needed | **STOP and ask** |
-| Baseline tests fail | **STOP and ask** |
-| Cannot find expected code | **STOP and ask** |
+| Condition                 | Action              |
+|---------------------------|---------------------|
+| Required info missing     | **STOP and ask**    |
+| Forbidden paths needed    | **STOP and ask**    |
+| Baseline tests fail       | **STOP and ask**    |
+| Cannot find expected code | **STOP and ask**    |
 | Refactor changes behavior | **STOP and report** |
 
 ---
@@ -189,23 +191,25 @@ These conditions require **immediate halt**. See [STOP-RULES.md](./STOP-RULES.md
 
 ### Recommended `.claude/settings.json`
 
+> **Tip:** Permission patterns are generally matched by prefix (e.g., `Bash(git diff:*)`). Keep rules conservative, and prefer explicit denies for secrets and sensitive files. See [permissions-patterns.md](./permissions-patterns.md).
+
 ```json
 {
   "permissions": {
     "allow": [
-      "Bash(pytest *)",
-      "Bash(npm test*)",
+      "Bash(pytest:*)",
+      "Bash(npm test:*)",
       "Bash(git status)",
-      "Bash(git diff*)",
-      "Bash(ls *)"
+      "Bash(git diff:*)",
+      "Bash(ls:*)"
     ],
     "deny": [
-      "Bash(cat .env*)",
-      "Bash(cat **/secrets/**)",
-      "Bash(cat **/*.key)",
-      "Bash(cat **/*.pem)",
-      "Bash(*sudo*)",
-      "Bash(rm -rf *)"
+      "Read(./.env)",
+      "Read(./secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Bash(sudo:*)",
+      "Bash(rm -rf:*)"
     ]
   }
 }
@@ -242,35 +246,37 @@ These conditions require **immediate halt**. See [STOP-RULES.md](./STOP-RULES.md
 ## 📋 Cheat Sheet
 
 ```
-┌─────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────┐
 │                 CLAUDE CODE QUICK REFERENCE                  │
-├─────────────────────────────────────────────────────────────┤
-│ COMMANDS:                                                   │
-│   /plan      → Enter Plan Mode (read-only exploration)      │
-│   /compact   → Compress context (use at ~80% capacity)      │
-│   /context   → Review what's currently loaded               │
-│   /clear     → Clear conversation                           │
-├─────────────────────────────────────────────────────────────┤
-│ CLI MODES:                                                  │
-│   claude                    → Interactive mode              │
-│   claude -p "prompt"        → Print mode (automation)       │
-│   claude --output-format json → Structured output           │
-├─────────────────────────────────────────────────────────────┤
-│ WORKFLOW:                                                   │
-│   1. Orient: scope, permissions, context                    │
-│   2. Plan: if multi-file or risky                          │
-│   3. Baseline: run tests before changes                     │
-│   4. Implement: minimum diff, test frequently               │
-│   5. Verify: all tests green                               │
-│   6. Report: summary, files, test results                   │
-├─────────────────────────────────────────────────────────────┤
-│ STOP CONDITIONS:                                            │
-│   • Missing information → STOP and ask                      │
-│   • Forbidden paths → STOP and ask                         │
-│   • Baseline tests fail → STOP and ask                     │
-│   • Can't find code → STOP and ask                         │
-│   • Refactor changes behavior → STOP and report            │
-└─────────────────────────────────────────────────────────────┘
+├──────────────────────────────────────────────────────────────┤
+│ NOTE: Commands can vary by version — use /help to confirm.   │
+├──────────────────────────────────────────────────────────────┤
+│ COMMANDS:                                                    │
+│   /plan      → Enter Plan Mode (read-only exploration)       │
+│   /compact   → Compress context (use at ~80% capacity)       │
+│   /context   → Review what's currently loaded                │
+│   /clear     → Clear conversation                            │
+├──────────────────────────────────────────────────────────────┤
+│ CLI MODES:                                                   │
+│   claude                    → Interactive mode               │
+│   claude -p "prompt"        → Print mode (automation)        │
+│   claude -p "prompt" --output-format json → Structured output│
+├──────────────────────────────────────────────────────────────┤
+│ WORKFLOW:                                                    │
+│   1. Orient: scope, permissions, context                     │
+│   2. Plan: if multi-file or risky                            │
+│   3. Baseline: run tests before changes                      │
+│   4. Implement: minimum diff, test frequently                │
+│   5. Verify: all tests green                                 │
+│   6. Report: summary, files, test results                    │
+├──────────────────────────────────────────────────────────────┤
+│ STOP CONDITIONS:                                             │
+│   • Missing information → STOP and ask                       │
+│   • Forbidden paths → STOP and ask                           │
+│   • Baseline tests fail → STOP and ask                       │
+│   • Can't find code → STOP and ask                           │
+│   • Refactor changes behavior → STOP and report              │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -304,6 +310,7 @@ Feed these documents to other AI tools (ChatGPT, NotebookLM) to:
 ## 📚 Document Index
 
 ### Core Documentation
+
 | Document | Purpose |
 |----------|---------|
 | [orchestrator.md](./orchestrator.md) | Central hub, always-on rules |
@@ -311,6 +318,7 @@ Feed these documents to other AI tools (ChatGPT, NotebookLM) to:
 | [claude-code-workflow.md](./claude-code-workflow.md) | Feature/Bug/Refactor workflows |
 
 ### Best Practices
+
 | Document | Purpose |
 |----------|---------|
 | [minimum-diff.md](./minimum-diff.md) | Smallest correct change |
@@ -325,6 +333,7 @@ Feed these documents to other AI tools (ChatGPT, NotebookLM) to:
 | [cli-automation-snippets.md](./cli-automation-snippets.md) | CI/CD patterns |
 
 ### Sub-Agent Templates
+
 | Document | Purpose |
 |----------|---------|
 | [refactor-agent.md](./refactor-agent.md) | Behavior-lock refactoring |
@@ -334,6 +343,7 @@ Feed these documents to other AI tools (ChatGPT, NotebookLM) to:
 | [domain-specialist-agent.md](./domain-specialist-agent.md) | Domain constraints |
 
 ### Project Templates
+
 | Document | Purpose |
 |----------|---------|
 | [project-template-1.md](./project-template-1.md) | API & Backend Updates |
@@ -356,18 +366,16 @@ To extend this kit:
 
 ## 📄 License
 
-[Add your preferred license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 🔗 Related Resources
 
-- [Claude Code Documentation](https://docs.anthropic.com/claude-code)
-- [Anthropic API Documentation](https://docs.anthropic.com)
-- [Claude Prompt Engineering Guide](https://docs.anthropic.com/claude/docs/prompt-engineering)
-
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Claude Code Docs: [https://docs.anthropic.com/en/docs/claude-code](https://docs.anthropic.com/en/docs/claude-code)
+- Claude Code Settings: [https://docs.anthropic.com/en/docs/claude-code/settings](https://docs.anthropic.com/en/docs/claude-code/settings)
+- Claude Code CLI Reference: [https://docs.anthropic.com/en/docs/claude-code/cli-usage](https://docs.anthropic.com/en/docs/claude-code/cli-usage)
+- Anthropic Documentation: [https://docs.anthropic.com](https://docs.anthropic.com)
 
 ---
 
