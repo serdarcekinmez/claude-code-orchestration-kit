@@ -16,15 +16,19 @@ Never write code in this skill. The only output is an approved SPEC.md.
      where the recipient is configured?
    - sensitive data: which fields, hidden where (screen, logs, exports)?
    - assets: do they exist (logo file, credentials, API access)?
+   - secrets: which API keys, tokens or passwords does the app need?
+     Where do they live in development (.env) and in production (secrets manager,
+     CI variables)? Who owns rotation?
    - "done": what test proves each rule works?
 3. Ask about the gaps with AskUserQuestion: at most 4 questions per round,
    multiple choice when possible, recommended option first. Up to 3 rounds.
 4. Always ask: "Should Claude see the real data, or only synthetic data with
    the same columns?" Recommend synthetic only.
 5. Write SPEC.md with exactly these sections:
-   Goal · Stack · Data · Business rules · Integrations · Privacy ·
+   Goal · Stack · Data · Business rules · Integrations · Privacy · Secrets ·
    Branding/UI · Out of scope · Done when
    Business rules are written as testable statements ("if delta = 0 → show N/A").
+   Secrets lists environment variable NAMES only, never values.
    Done when is a checklist of tests.
 6. Show SPEC.md and ask for approval. Apply changes until approved.
 7. Then suggest: /spec-architect:setup-architect

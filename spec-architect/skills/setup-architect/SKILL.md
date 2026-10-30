@@ -23,6 +23,15 @@ description: Use after SPEC.md is approved, or when the user asks which skills, 
    - .claude/pii-fields.txt: one sensitive field name per line
      (the plugin's privacy hook reads it)
    - a script that generates synthetic data with the same columns into data/sample/
-5. Show the proposed file tree with one line per file. Wait for approval.
-6. Write the files. Then tell the user to start the build with:
+5. Secrets defaults (always, even when SPEC.md does not mention secrets):
+   - .gitignore: .env, .env.*, !.env.example, *.pem, *.key
+   - .env.example with every variable name and an empty or placeholder value
+   - code reads secrets only from environment variables
+   - .claude/settings.json deny rules: Read(./.env), Read(./.env.*), Read(**/*.pem),
+     Read(**/*.key), Read(./secrets/**), Read(~/.ssh/**), Read(~/.aws/**)
+   - .mcp.json: tokens as ${VAR}, never literal values
+   - copy ${CLAUDE_PLUGIN_ROOT}/templates/.pre-commit-config.yaml to the project
+     root and tell the user to run `pip install pre-commit && pre-commit install`
+6. Show the proposed file tree with one line per file. Wait for approval.
+7. Write the files. Then tell the user to start the build with:
    "Implement SPEC.md following the build-rules skill."

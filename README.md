@@ -17,6 +17,8 @@ It turns rough notes into an approved `SPEC.md`, designs the Claude Code setup t
 | `build-rules` | Skill | Tests first, minimum diff, test gate and STOP rules while implementing. |
 | `spec-reviewer` | Subagent (Sonnet, read-only) | Checks the code and tests against every rule in `SPEC.md` and reports gaps as a table. |
 | `privacy_check.py` | PostToolUse hook | After each Write/Edit, flags real-looking emails, IBAN-like numbers, and sensitive fields (from `.claude/pii-fields.txt`) sent to print, logs, screens or exports. |
+| `secret_guard.py` | PreToolUse hook | Blocks Read, Grep, Bash and PowerShell calls that touch secret files (`.env`, keys, `~/.ssh`, `secrets/`…) or dump environment variables. |
+| `secret_scan.py` | PostToolUse hook | After each Write/Edit, flags API keys, tokens, private keys and hard-coded passwords without printing the value. |
 
 ### Install
 
@@ -44,6 +46,27 @@ The hooks run `python3`, so Python 3.9+ must be on your PATH as `python3`.
 2. **Setup:** run `/spec-architect:setup-architect`. Review the proposed file tree, approve it, and it writes the files.
 3. **Build:** ask Claude to *"Implement SPEC.md following the build-rules skill."*
    When the build is done, the **spec-reviewer** agent checks the result against `SPEC.md`. `build-rules` calls it at the end, or you can ask for it directly.
+
+### 🔐 How secrets are handled
+
+Secrets are protected by several independent layers, so one miss is not a leak:
+
+| Layer | When | What it does |
+|---|---|---|
+| Interview | Before any code | `spec-interview` asks which keys the app needs, where they live in dev and prod, and who owns rotation. `SPEC.md` lists variable **names** only. |
+| Permissions | Every session | `setup-architect` writes `.claude/settings.json` deny rules for `.env`, `.env.*`, `*.pem`, `*.key`, `secrets/`, `~/.ssh` and `~/.aws`, plus `.gitignore` entries and a `.env.example`. |
+| Guard hook | Before each Read, Grep, Bash or PowerShell call | `secret_guard.py` blocks calls that touch secret files or dump environment variables. |
+| Scan hook | After each Write or Edit | `secret_scan.py` flags keys, tokens and hard-coded passwords written into files, without echoing the value. |
+| Pre-commit | At `git commit` | [gitleaks](https://github.com/gitleaks/gitleaks) (pinned in `templates/.pre-commit-config.yaml`) refuses commits that contain secrets. |
+| README | Always | This section: the rules no tool can enforce for you. |
+
+**What remains your responsibility**
+
+- Never paste a secret into the chat; hooks can't catch that.
+- Hooks are pattern-based safety nets, not guarantees. Review diffs.
+- If a key was ever committed or shown to Claude, rotate it. Deleting the file or the commit does not remove it from git history.
+- Use a real secrets manager in production; `.env` is for local development only.
+- Give each key the minimum scope it needs, and separate dev and prod keys.
 
 This repository contains a comprehensive set of Markdown files designed to be used with Claude Code—Anthropic's command-line agentic coding tool. These documents establish best practices, enforce safety guardrails, and provide copy-paste prompt templates for common engineering workflows.
 
