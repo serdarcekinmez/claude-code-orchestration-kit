@@ -2,6 +2,49 @@
 
 > **A structured documentation system for disciplined, safe, and effective Claude Code sessions.**
 
+---
+
+## 🧩 Version 2: spec-architect plugin
+
+Version 2 packages the kit's discipline as an installable Claude Code plugin, **spec-architect**.
+It turns rough notes into an approved `SPEC.md`, designs the Claude Code setup the project needs
+(CLAUDE.md, skills, subagents, hooks, MCP servers, permissions), then enforces build rules while the code is written.
+
+| Component | Type | What it does |
+|---|---|---|
+| `spec-interview` | Skill | Interviews you about gaps in your notes (formulas, thresholds, actions, sensitive data, "done") and writes `SPEC.md`. Writes no code. |
+| `setup-architect` | Skill | Maps each need in `SPEC.md` to the cheapest primitive that guarantees it, shows the file tree, and writes the setup once you approve. |
+| `build-rules` | Skill | Tests first, minimum diff, test gate and STOP rules while implementing. |
+| `spec-reviewer` | Subagent (Sonnet, read-only) | Checks the code and tests against every rule in `SPEC.md` and reports gaps as a table. |
+| `privacy_check.py` | PostToolUse hook | After each Write/Edit, flags real-looking emails, IBAN-like numbers, and sensitive fields (from `.claude/pii-fields.txt`) sent to print, logs, screens or exports. |
+
+### Install
+
+In a Claude Code session:
+
+```
+/plugin marketplace add serdarcekinmez/claude-code-orchestration-kit
+/plugin install spec-architect@serdar-kit
+```
+
+Or in one step (Claude Code 2.1.275 or later):
+
+```
+/plugin install spec-architect --marketplace serdarcekinmez/claude-code-orchestration-kit
+```
+
+From a shell, use `claude plugin marketplace add …` and `claude plugin install …` with the same arguments.
+To try a local clone without installing: `claude --plugin-dir ./spec-architect`.
+
+The hooks run `python3`, so Python 3.9+ must be on your PATH as `python3`.
+
+### Use
+
+1. **Spec:** paste your rough notes and run `/spec-architect:spec-interview`. Answer the questions, then approve `SPEC.md`.
+2. **Setup:** run `/spec-architect:setup-architect`. Review the proposed file tree, approve it, and it writes the files.
+3. **Build:** ask Claude to *"Implement SPEC.md following the build-rules skill."*
+   When the build is done, the **spec-reviewer** agent checks the result against `SPEC.md`. `build-rules` calls it at the end, or you can ask for it directly.
+
 This repository contains a comprehensive set of Markdown files designed to be used with Claude Code—Anthropic's command-line agentic coding tool. These documents establish best practices, enforce safety guardrails, and provide copy-paste prompt templates for common engineering workflows.
 
 ---
