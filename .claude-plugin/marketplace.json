@@ -1,0 +1,12 @@
+{
+  "name": "serdar-kit",
+  "owner": { "name": "Serdar Cekinmez" },
+  "description": "Claude Code plugins from the Claude Code Orchestration Kit.",
+  "plugins": [
+    {
+      "name": "spec-architect",
+      "source": "./spec-architect",
+      "description": "Turns rough notes into an approved spec, then designs and enforces the Claude Code setup for it."
+    }
+  ]
+}

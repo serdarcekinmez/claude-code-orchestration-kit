@@ -1,0 +1,6 @@
+{
+  "name": "spec-architect",
+  "version": "2.0.0",
+  "description": "Interview → SPEC.md → right skills, agents, hooks and MCP → enforced build rules.",
+  "author": { "name": "Serdar Cekinmez" }
+}
